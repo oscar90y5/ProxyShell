@@ -1,0 +1,54 @@
+#!/bin/bash
+
+# 1. MENSAJE EN CONSOLA CON EL PID DEL PROCESO
+echo -e "\nInicio de la conexion[$$] Socket A: $1, Socket B: 10.\n" >&$1
+
+# 2. COMPROBAR QUE SE HA RECIBIDO UN NUMERO DE FICHERO ABIERTO
+if [ $# -lt 1 ]
+then
+	echo "Error in FD/Socket argument"
+	exit 0
+fi
+
+# 3. CONECTAMOS CON EL SOCKET B (Servidor al que queremos conectarnos)
+echo "Introduzca nombre de maquina y puerto (separados por un espacio):" >&$1
+
+read -u $1 MAQUINA PUERTO
+PUERTO="${PUERTO%$'\r'}"
+
+echo -e "\nConectando a $MAQUINA en el puerto $PUERTO ...\n" >&$1
+exec 10<>/dev/tcp/$MAQUINA/$PUERTO
+
+# 4. BUCLE DE LECTURA DEL SOCKET A
+echo -e "Escriba los mensajes que desee transmitir a $MAQUINA,\npara finalizar pulse enter sin escribir nada." >&$1
+while read -u $1 VARIABLE
+do
+	#Control de vucle
+	VAR="${VARIABLE%$'\r'}"
+	if [ "$VAR" == "" ]
+	then
+		break
+	fi
+
+	# 5. ENVIAR LO LEIDO AL SOCKET B
+	echo "$VAR" >&10
+done
+
+# 6. BUCLE DE LECTURA DEL SOCKET B
+echo -e "Leyendo respuesta de $MAQUINA ...\n" >&$1
+while read -u 10 VARIABLE
+do
+	#Control de vucle
+	VARIABLE="${VARIABLE%$'\r'}"
+	if [ "$VARIABLE" == "" ]
+	then
+		break
+	fi
+
+	# 7. ENVIAR LO LEIDO AL SOCKET A
+	echo "$VARIABLE" >&$1
+done
+
+# 8. MENSAJE EN CONSOLA CON EL PID DEL PROCESO
+echo -e "\nFin de la conexion[$$] Socket A: $1, Socket B: 10." >&$1
+

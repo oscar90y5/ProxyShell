@@ -1,0 +1,7 @@
+#!/bin/bash
+ssh -N -L 18000:localhost:20003 osferna@jair.lab.inf.uva.es &
+echo -n $! > tunel.pid
+
+ssh osferna@jair.lab.inf.uva.es './tcpServer -p 20003 -s ./proxyScript & echo $! > tcp.pid '
+
+telnet localhost 18000

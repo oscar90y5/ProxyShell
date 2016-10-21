@@ -1,0 +1,8 @@
+#!/bin/bash
+
+#eliminamos tunel
+kill $(< tunel.pid)
+
+#Eliminamos el seridor tcp
+ssh -f osferna@jair.lab.inf.uva.es 'kill $(< ~/tcp.pid)'
+
